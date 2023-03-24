@@ -2,12 +2,14 @@
 import pygame
 
 from src import skis
+from src import obstacle
 
 s = skis.Skis()
 pygame.init()
 screen = pygame.display.set_mode([500, 500])
 running = True
 cl = pygame.time.Clock()
+obstacleSpawner = obstacle.obstacleSpawner(screen)
 
 while running:
     dt = cl.tick(60) / 1000
@@ -15,5 +17,6 @@ while running:
         if event.type == pygame.QUIT:
             running = False
     screen.fill((255, 255, 255))
+    obstacleSpawner.update()
     s.update(screen, dt)
     pygame.display.update()

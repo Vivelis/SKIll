@@ -44,7 +44,7 @@ class Ski:
 
     def reduce_momentum(self, dt: float):
         self.momentum *= 1 - ((1 - self.momentum_reduction) * dt)
-        print(1 - ((1 - self.momentum_reduction) * dt))
+        # print(1 - ((1 - self.momentum_reduction) * dt))
 
 
     def add_momentum(self, factor: float) -> None:
