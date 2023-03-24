@@ -60,7 +60,7 @@ class Ski:
 
 class Skis:
     def __init__(self) -> None:
-        self.img = pygame.image.load("ski.png")
+        self.img = pygame.image.load("assets/ski.png")
         self.left_ski = Ski(self.img)
         self.right_ski = Ski(self.img)
         self.y = (3 / 4)
@@ -92,23 +92,4 @@ class Skis:
         self.right_ski.update(dt)
         s, r = self.right_ski.get_rect((c + x_diff, y))
         screen.blit(s, r)
-
-
-
-
-
-s = Skis()
-pygame.init()
-screen = pygame.display.set_mode([500, 500])
-running = True
-cl = pygame.time.Clock()
-
-while running:
-    dt = cl.tick(60) / 1000
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-    screen.fill((255, 255, 255))
-    s.update(screen, dt)
-    pygame.display.update()
 

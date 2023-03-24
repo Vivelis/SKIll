@@ -1,0 +1,19 @@
+#!/usr/bin/python3
+import pygame
+
+from src import skis
+
+s = skis.Skis()
+pygame.init()
+screen = pygame.display.set_mode([500, 500])
+running = True
+cl = pygame.time.Clock()
+
+while running:
+    dt = cl.tick(60) / 1000
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+    screen.fill((255, 255, 255))
+    s.update(screen, dt)
+    pygame.display.update()
