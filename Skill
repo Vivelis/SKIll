@@ -83,6 +83,8 @@ def main():
         if scn.scene == menu.Scene.MAIN_MENU:
             menu.main_menu(scn)
         elif scn.scene == menu.Scene.GAME:
+            score = 1
+            menu.game_over_menu(scn, score)
             name = text_input(scn)
             score = int(run_game(scn))
             highscore.add_score(name, score)
