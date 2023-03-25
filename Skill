@@ -10,9 +10,11 @@ def text_input(scene: menu.Scene):
     text = ""
     done = False
     white=(255,255,255)
+    black=(0,0,0)
     font = pygame.font.SysFont("Arial", 30)
 
     bg = (0,0,0)
+    background = pygame.image.load("assets/background_menu.png")
     while not done:
         for event in pygame.event.get():
             scene.screen.fill(bg)
@@ -20,16 +22,19 @@ def text_input(scene: menu.Scene):
                 done = True
                 scene.scene = menu.Scene.EXIT
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_RETURN:
+                if event.key == pygame.K_RETURN and len(text) > 0:
                     done = True
                 elif event.key == pygame.K_BACKSPACE:
                     if len(text)>0:
                         text = text[:-1]
-                else:
+                elif len(text) < 10:
                     text += event.unicode
         scene.screen.fill(bg)
+        scene.screen.blit(background, (0, 0))
         txtsurf = font.render(text, True, white)
-        scene.screen.blit(txtsurf,(200 - txtsurf.get_width() // 2, 150 - txtsurf.get_height() // 2))
+        name = font.render("Enter Name (press enter to play)", True, black)
+        scene.screen.blit(name, (300 - name.get_width() // 2, 100 - name.get_height() // 2))
+        scene.screen.blit(txtsurf,(300 - txtsurf.get_width() // 2, 150 - txtsurf.get_height() // 2))
         pygame.display.update()
     return text
 
