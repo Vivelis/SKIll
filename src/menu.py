@@ -13,14 +13,11 @@ class Scene():
 
     def __init__(self, screen) -> None:
         self.scene = Scene.MAIN_MENU
-        self.skis = None
-        self.scores = []
         self.screen = screen
         self.clock = pygame.time.Clock()
 
 def temp_play(scn: Scene):
     scn.scene = Scene.GAME
-    scn.skis = Skis()
 
 def temp_highscore(scn: Scene):
     scn.scene = Scene.HIGHSCORE
