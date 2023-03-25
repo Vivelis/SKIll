@@ -59,8 +59,9 @@ def main_menu(scn: Scene):
                             highscore = True
                         else:
                             score = Boutons[i].linked_function(scn)
-                        if highscore == True and 450 <= event.pos[0] <= 490 and 730 <= event.pos[1] <= 770:
-                            highscore = False
+                    if highscore == True and 450 <= event.pos[0] <= 490 and 730 <= event.pos[1] <= 770:
+                        print("back")
+                        highscore = False
         if (not highscore):
             scn.screen.fill((0, 0, 0))
             scn.screen.blit(background_menu, (0, 0))
@@ -76,6 +77,6 @@ def main_menu(scn: Scene):
                 textobj = pygame.font.Font(None, 36).render(text, 1, (0, 0, 0))
                 textrect = textobj.get_rect()
                 textrect.center = (294, 200 + (i * 50))
-                screen.blit(back_button, (450, 730))
+                scn.screen.blit(back_button, (450, 730))
                 scn.screen.blit(textobj, textrect)
         pygame.display.update() # Mettre à jour l'écran
