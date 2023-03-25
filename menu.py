@@ -20,7 +20,6 @@ def temp_play():
 def temp_highscore():
     scores = parse_score()
     return Scene.HIGHSCORE, scores
-    
 
 def gen_button_rect(index: int, screen) -> Rectangle:
     button_length = 275
@@ -35,12 +34,13 @@ def main_menu():
     background_menu = pygame.image.load("assets/background_menu.png")
     buttons_menu = pygame.image.load("assets/buttons.png")
     logo = pygame.image.load("assets/logo.png")
+    back_button = pygame.image.load("assets/back_button.png")
     Boutons = []
     Boutons.append(Button("Jouer", temp_play, gen_button_rect(0, screen)))
     Boutons.append(Button("Highscore", temp_highscore, gen_button_rect(1, screen)))
     Boutons.append(Button("Exit", exit, gen_button_rect(2, screen)))
     while True:
-        for event in pygame.event.get(): # Boucle des évènements
+        for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 quit()
@@ -48,6 +48,9 @@ def main_menu():
                 for i in range(len(Boutons)):
                     if Boutons[i].is_clicked(event) == True:
                         scene, score = Boutons[i].linked_function()
+            if event.type == pygame.MOUSEBUTTONDOWN and scene == Scene.HIGHSCORE:
+                if 450 <= event.pos[0] <= 490 and 730 <= event.pos[1] <= 770:
+                    scene = Scene.MAIN_MENU
         screen.fill((0, 0, 0))
         if (scene == Scene.MAIN_MENU):
             screen.blit(background_menu, (0, 0))
@@ -63,6 +66,7 @@ def main_menu():
                 textobj = pygame.font.Font(None, 36).render(text, 1, (0, 0, 0))
                 textrect = textobj.get_rect()
                 textrect.center = (294, 200 + (i * 50))
+                screen.blit(back_button, (450, 730))
                 screen.blit(textobj, textrect)
         if (scene == Scene.GAME):
             1
