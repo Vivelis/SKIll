@@ -38,6 +38,7 @@ def main_menu(scn: Scene):
     highscore = False
     background_menu = pygame.image.load("assets/background_menu.png")
     buttons_menu = pygame.image.load("assets/buttons.png")
+    back_button = pygame.image.load("assets/back_button.png")
     logo = pygame.image.load("assets/logo.png")
     Boutons = []
     Boutons.append(Button("Jouer", temp_play, gen_button_rect(0, scn.screen)))
@@ -46,7 +47,7 @@ def main_menu(scn: Scene):
 
     while scn.scene == Scene.MAIN_MENU:
         dt = scn.clock.tick(60) / 1000
-        for event in pygame.event.get(): # Boucle des évènements
+        for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 quit()
@@ -58,6 +59,8 @@ def main_menu(scn: Scene):
                             highscore = True
                         else:
                             score = Boutons[i].linked_function(scn)
+                        if highscore == True and 450 <= event.pos[0] <= 490 and 730 <= event.pos[1] <= 770:
+                            highscore = False
         if (not highscore):
             scn.screen.fill((0, 0, 0))
             scn.screen.blit(background_menu, (0, 0))
@@ -73,5 +76,6 @@ def main_menu(scn: Scene):
                 textobj = pygame.font.Font(None, 36).render(text, 1, (0, 0, 0))
                 textrect = textobj.get_rect()
                 textrect.center = (294, 200 + (i * 50))
+                screen.blit(back_button, (450, 730))
                 scn.screen.blit(textobj, textrect)
         pygame.display.update() # Mettre à jour l'écran
