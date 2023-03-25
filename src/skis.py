@@ -70,7 +70,8 @@ class Ski:
 
 class Skis:
     def __init__(self) -> None:
-        self.img = pygame.image.load("ski.png")
+        self.pos = pygame.math.Vector2(0, 0)
+        self.img = pygame.image.load("assets/ski.png")
         self.left_ski = Ski(self.img, True)
         self.right_ski = Ski(self.img, False)
         self.y = (3 / 4)
@@ -133,35 +134,5 @@ class Skis:
         s, r = self.right_ski.get_rect((c + x_diff, y))
         r.left += x
         screen.blit(s, r)
+        self.pos += self.get_deplacement(dt)
         self.update_speed(dt)
-
-s = Skis()
-pygame.init()
-screen = pygame.display.set_mode([500, 883])
-running = True
-cl = pygame.time.Clock()
-bg = pygame.image.load("bg.png").convert()
-
-score = 0
-pos = pygame.Vector2(0, 0)
-while running:
-    dt = cl.tick(60) / 1000
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_a:
-                s.left_ski.shake()
-
-    screen.fill((255, 255, 255))
-    scroll = (pos.y % 500) / 500
-    screen.blit(bg, (0, bg.get_height() * (scroll - 1)))
-    screen.blit(bg, (0, bg.get_height() * scroll))
-    screen.blit(bg, (0, bg.get_height() * (scroll + 1)))
-    s.update(screen, dt, pos.x)
-    score += s.calc_score(dt)
-    pos += s.get_deplacement(dt)
-    x, y = pos
-    print(f"{x:.2f}, {y:.2f} => {s.angle_diff():.2f} => {s.speed:.5f}", end='\r')
-    pygame.display.update()
-
