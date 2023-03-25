@@ -1,5 +1,6 @@
 import pygame
 from random import uniform
+from math import cos, sin, radians, exp
 
 Surface = pygame.Surface
 Rect = pygame.Rect
@@ -12,7 +13,7 @@ def rotate(surface, angle, pivot, offset):
         surface (pygame.Surface): The surface that is to be rotated.
         angle (float): Rotate by this angle.
         pivot (tuple, list, pygame.math.Vector2): The pivot point.
-        offset (pygame.math.Vector2): This vector is added to the pivot.
+        offset (pygame.math.Vecto30r2): This vector is added to the pivot.
     """
     rotated_image = pygame.transform.rotozoom(surface, -angle, 1)  # Rotate the image.
     rotated_offset = offset.rotate(angle)  # Rotate the offset vector.
@@ -22,21 +23,26 @@ def rotate(surface, angle, pivot, offset):
 
 class Ski:
 
-    def __init__(self, img: Surface) -> None:
+    def __init__(self, img: Surface, is_left: bool) -> None:
+        max_angle_factor = 16
         self.max_momentum = 250
         self.momentum_base_factor = 220
-        self.momentum_reduction = 0.1
+        self.momentum_reduction = 0.05
+        self.min_speed_reduction = 1
         self.angle = 90
+        self.angle_max = 60
+        self.max_angle = self.angle + 60 + is_left * max_angle_factor
+        self.min_angle = self.angle - 60 - (not is_left) * max_angle_factor
         self.momentum = 0
-        self.bounce = False
+        self.bounce_ratio = 0.5
         self.center_offset = pygame.math.Vector2(0, img.get_height() // 4)
 
         self.img = img
 
     def set_angle(self, new_angle: float) -> float:
-        if (new_angle > 180 or new_angle < 0):
-            self.momentum = -self.momentum if self.bounce else 0
-        self.angle = max(min(180, new_angle), 0)
+        if (new_angle > self.max_angle or new_angle < self.min_angle):
+            self.momentum = -self.momentum * self.bounce_ratio
+        self.angle = max(min(self.max_angle, new_angle), self.min_angle)
         return self.angle
 
     def change_angle(self, angle_diff: float) -> float:
@@ -46,7 +52,7 @@ class Ski:
         self.momentum = max(min(self.max_momentum, new_momentum), -self.max_momentum)
 
     def reduce_momentum(self, dt: float):
-        self.momentum *= 1 - ((1 - self.momentum_reduction) * dt)
+        self.set_momentum(self.momentum - (self.momentum * dt * 2))
 
     def add_momentum(self, factor: float) -> None:
         self.set_momentum(self.momentum + factor * self.momentum_base_factor)
@@ -65,15 +71,44 @@ class Ski:
 class Skis:
     def __init__(self) -> None:
         self.img = pygame.image.load("ski.png")
-        self.left_ski = Ski(self.img)
-        self.right_ski = Ski(self.img)
+        self.left_ski = Ski(self.img, True)
+        self.right_ski = Ski(self.img, False)
         self.y = (3 / 4)
-        self.x = (1 / 9)
+        self.x = (1 / 12)
+        self.speed = 1
+        self.max_speed = 883 / 3
+        self.max_speed_gain = self.max_speed / 7.5
+        self.max_speed_penalty = 3
+        self.drag_ratio = 0.9
+        self.speed_ratio = 3
+
+        self.max_points = 100
+
+    def update_speed(self, dt: float):
+        d = self.angle_diff() / 180
+        alpha = ((self.left_ski.angle) + (self.right_ski.angle)) / 2 - 90
+        penalty = max(self.max_speed_penalty * d, 0)
+        self.speed += exp(-(alpha/60) ** 2) * self.max_speed_gain * dt
+        self.speed -= self.speed * (penalty * dt)
+        self.speed *= 1 -((1 - self.drag_ratio) * dt)
+        if (self.speed > self.max_speed):
+            self.speed = self.max_speed
+
+    def calc_score(self, dt: float):
+        k = 5
+        x = self.angle_diff()
+        m = self.max_points
+        return (m - m * x / (k + x)) * dt
+
+    def get_deplacement(self, dt: float):
+        alpha = radians(180 - ((self.left_ski.angle) + (self.right_ski.angle)) / 2)
+        res = pygame.Vector2(cos(alpha), sin(alpha))
+        return res * self.speed * dt * self.speed_ratio
 
     def angle_diff(self) -> float:
         return abs(self.left_ski.angle - self.right_ski.angle)
 
-    def update(self, screen: pygame.surface.Surface, dt: float) -> None:
+    def update(self, screen: pygame.surface.Surface, dt: float, x: float = 0) -> None:
         keys = pygame.key.get_pressed()
         if keys[pygame.K_k]:
             self.right_ski.add_momentum(-1 * dt)
@@ -91,20 +126,26 @@ class Skis:
 
         self.left_ski.update(dt)
         s, r = self.left_ski.get_rect((c - x_diff, y))
+        r.left += x
         screen.blit(s, r)
 
         self.right_ski.update(dt)
         s, r = self.right_ski.get_rect((c + x_diff, y))
+        r.left += x
         screen.blit(s, r)
+        self.update_speed(dt)
 
 s = Skis()
 pygame.init()
-screen = pygame.display.set_mode([500, 500])
+screen = pygame.display.set_mode([500, 883])
 running = True
 cl = pygame.time.Clock()
+bg = pygame.image.load("bg.png").convert()
 
+score = 0
+pos = pygame.Vector2(0, 0)
 while running:
-    dt = cl.tick(30) / 1000
+    dt = cl.tick(60) / 1000
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -113,6 +154,14 @@ while running:
                 s.left_ski.shake()
 
     screen.fill((255, 255, 255))
-    s.update(screen, dt)
+    scroll = (pos.y % 500) / 500
+    screen.blit(bg, (0, bg.get_height() * (scroll - 1)))
+    screen.blit(bg, (0, bg.get_height() * scroll))
+    screen.blit(bg, (0, bg.get_height() * (scroll + 1)))
+    s.update(screen, dt, pos.x)
+    score += s.calc_score(dt)
+    pos += s.get_deplacement(dt)
+    x, y = pos
+    print(f"{x:.2f}, {y:.2f} => {s.angle_diff():.2f} => {s.speed:.5f}", end='\r')
     pygame.display.update()
 
