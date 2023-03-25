@@ -70,6 +70,7 @@ class Ski:
 
 class Skis:
     def __init__(self) -> None:
+        self.pos = pygame.math.Vector2(0, 0)
         self.img = pygame.image.load("assets/ski.png")
         self.left_ski = Ski(self.img, True)
         self.right_ski = Ski(self.img, False)
@@ -133,4 +134,5 @@ class Skis:
         s, r = self.right_ski.get_rect((c + x_diff, y))
         r.left += x
         screen.blit(s, r)
+        self.pos += self.get_deplacement(dt)
         self.update_speed(dt)

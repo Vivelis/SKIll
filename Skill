@@ -3,34 +3,45 @@ import pygame
 
 from src import skis
 from src import obstacle
+from src import menu
 
-s = Skis()
-pygame.init()
-screen = pygame.display.set_mode([500, 883])
-running = True
-cl = pygame.time.Clock()
-bg = pygame.image.load("assets/bg.png").convert()
-obstacleSpawner = obstacle.obstacleSpawner(screen)
-score = 0
-pos = pygame.Vector2(0, 0)
+def run_game(scene : menu.Scene) :
+    score = 0
+    s = skis.Skis()
+    obstacleSpawner = obstacle.obstacleSpawner(scene.screen)
+    bg = pygame.image.load("assets/bg.png").convert()
 
-while running:
-    dt = cl.tick(60) / 1000
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_a:
-                s.left_ski.shake()
-    screen.fill((255, 255, 255))
-    obstacleSpawner.update()
-    scroll = (pos.y % 500) / 500
-    screen.blit(bg, (0, bg.get_height() * (scroll - 1)))
-    screen.blit(bg, (0, bg.get_height() * scroll))
-    screen.blit(bg, (0, bg.get_height() * (scroll + 1)))
-    s.update(screen, dt, pos.x)
-    score += s.calc_score(dt)
-    pos += s.get_deplacement(dt)
-    x, y = pos
-    print(f"{x:.2f}, {y:.2f} => {s.angle_diff():.2f} => {s.speed:.5f}", end='\r')
-    pygame.display.update()
+    while scene.scene == menu.Scene.GAME:
+        dt = scene.clock.tick(60) / 1000
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                scene.scene = menu.Scene.EXIT
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_a:
+                    s.left_ski.shake()
+        scene.screen.fill((255, 255, 255))
+        scroll = (s.pos.y % 500) / 500
+        scene.screen.blit(bg, (0, bg.get_height() * (scroll - 1)))
+        scene.screen.blit(bg, (0, bg.get_height() * scroll))
+        scene.screen.blit(bg, (0, bg.get_height() * (scroll + 1)))
+        s.update(scene.screen, dt, s.pos.x)
+        score += s.calc_score(dt)
+        obstacleSpawner.update()
+        pygame.display.update()
+
+def main():
+    pygame.init()
+    screen = pygame.display.set_mode((588, 883))
+    pygame.display.set_caption("SKIll")
+
+    scn = menu.Scene(screen)
+    while scn.scene != menu.Scene.EXIT:
+        if scn.scene == menu.Scene.MAIN_MENU:
+            menu.main_menu(scn)
+        elif scn.scene == menu.Scene.GAME:
+            run_game(scn)
+        elif scn.scene == menu.Scene.HIGHSCORE:
+            menu.highscore_menu(scn)
+
+if __name__ == "__main__":
+    main()
