@@ -4,8 +4,15 @@ import pygame
 def timer(start, seconds):
     timer = time.time()
     string = str(int((start + seconds - timer)//60))
+    if (string == "-1"):
+        string = "0:00"
+        return string
     string += ":"
-    string += str(int((start + seconds - timer)%60))
+    string_seconds = str(int((start + seconds - timer)%60))
+    if (len(string_seconds) == 2):
+        string += string_seconds
+    else:
+        string += "0" + string_seconds
     return string
 
 def display():
