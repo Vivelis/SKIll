@@ -31,4 +31,3 @@ def display():
         pygame.display.update()
 
 display()
-#timer(120)
