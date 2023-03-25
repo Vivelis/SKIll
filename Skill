@@ -1,15 +1,72 @@
 #!/usr/bin/python3
 import pygame
+import time
 
 from src import skis
 from src import obstacle
 from src import menu
+from src import highscore
+
+def timer(start, seconds):
+    timer = time.time()
+    string = str(int((start + seconds - timer)//60))
+    if (string == "-1"):
+        string = "0:00"
+        return string
+    string += ":"
+    string_seconds = str(int((start + seconds - timer)%60))
+    if (len(string_seconds) == 2):
+        string += string_seconds
+    else:
+        string += "0" + string_seconds
+    return string
+
+def text_input(scene: menu.Scene):
+    text = ""
+    done = False
+    black=(0,0,0)
+    font = pygame.font.SysFont("Arial", 30)
+
+    bg = (0,0,0)
+    background = pygame.image.load("assets/background_menu.png")
+    while not done:
+        for event in pygame.event.get():
+            scene.screen.fill(bg)
+            if event.type == pygame.QUIT:
+                done = True
+                scene.scene = menu.Scene.EXIT
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN and len(text) > 0:
+                    done = True
+                elif event.key == pygame.K_BACKSPACE:
+                    if len(text)>0:
+                        text = text[:-1]
+                elif len(text) < 10:
+                    text += event.unicode
+        scene.screen.fill(bg)
+        scene.screen.blit(background, (0, 0))
+        txtsurf = font.render(text, True, black)
+        name = font.render("Enter Name (press enter to play)", True, black)
+        scene.screen.blit(name, (300 - name.get_width() // 2, 150 - name.get_height() // 2))
+        scene.screen.blit(txtsurf,(300 - txtsurf.get_width() // 2, 200 - txtsurf.get_height() // 2))
+        pygame.display.update()
+    return text
+
+
+def check_collisions(s: skis.Skis, obstacleSpawner: obstacle.obstacleSpawner):
+    for item in obstacleSpawner.obstacles:
+        if s.intersects((item.x, item.y, item.w, item.h)):
+            s.speed = 50
 
 def run_game(scene : menu.Scene) :
     score = 0
-    s = skis.Skis()
+    font = pygame.font.SysFont("Arial", 30)
+    start = time.time()
+    s = skis.Skis(scene.screen)
     obstacleSpawner = obstacle.obstacleSpawner(scene.screen)
-    bg = pygame.image.load("assets/bg.png").convert()
+    bg = pygame.image.load("assets/neige.png").convert()
+    parallax_speed = 1
+    parallax_height = bg.get_height()
 
     while scene.scene == menu.Scene.GAME:
         dt = scene.clock.tick(60) / 1000
@@ -19,15 +76,23 @@ def run_game(scene : menu.Scene) :
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_a:
                     s.left_ski.shake()
+        check_collisions(s, obstacleSpawner)
+        score += s.calc_score(dt)
+        scroll = ((s.pos.y * parallax_speed) % parallax_height) / parallax_height
         scene.screen.fill((255, 255, 255))
-        scroll = (s.pos.y % 500) / 500
         scene.screen.blit(bg, (0, bg.get_height() * (scroll - 1)))
         scene.screen.blit(bg, (0, bg.get_height() * scroll))
         scene.screen.blit(bg, (0, bg.get_height() * (scroll + 1)))
+        txtsurf = font.render(timer(start, 60), True, (0, 0, 0))
+        scene.screen.blit(txtsurf,(370 - txtsurf.get_width() // 2, 0 + txtsurf.get_height() // 2))
         s.update(scene.screen, dt, s.pos.x)
-        score += s.calc_score(dt)
-        obstacleSpawner.update()
+        obstacleSpawner.update(s.get_deplacement(dt).y)
         pygame.display.update()
+        if (time.time() - start > 60):
+            scene.scene = menu.Scene.GAMEOVER
+        if (s.pos.x < -scene.screen.get_width() / 2  or s.pos.x > scene.screen.get_width() / 2):
+            scene.scene = menu.Scene.GAMEOVER
+    return score
 
 def main():
     pygame.init()
@@ -39,7 +104,10 @@ def main():
         if scn.scene == menu.Scene.MAIN_MENU:
             menu.main_menu(scn)
         elif scn.scene == menu.Scene.GAME:
-            run_game(scn)
+            name = text_input(scn)
+            score = int(run_game(scn))
+            highscore.add_score(name, score)
+            menu.game_over_menu(scn, score)
         elif scn.scene == menu.Scene.HIGHSCORE:
             menu.highscore_menu(scn)
 
