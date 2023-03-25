@@ -30,7 +30,7 @@ class obstacleSpawner :
         self.screen = screen
         self.obstacles = []
         self.last_spawn = default_timer()
-        self.spawn_time = 1
+        self.spawn_time = 0.5
         random.seed(10)
         self.clock = pygame.time.Clock()
 

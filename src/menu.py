@@ -61,12 +61,12 @@ def game_over_menu(scn: Scene, score: int):
         panneau = pygame.image.load("assets/panneau.png")
         panneau = pygame.transform.scale(panneau, (500, 400))
         scn.screen.blit(panneau, (40, 0))
-        text = "Distance parcourue :"
+        text = "Score"
         textobj = pygame.font.Font(None, 50).render(text, 1, (0, 0, 0))
         textrect = textobj.get_rect()
         textrect.center = (294, 130)
         scn.screen.blit(textobj, textrect)
-        text = "485 480" + " m"
+        text = str(score)
         textobj = pygame.font.Font(None, 60).render(text, 1, (0, 0, 0))
         textrect = textobj.get_rect()
         textrect.center = (294, 180)

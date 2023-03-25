@@ -1,15 +1,29 @@
 #!/usr/bin/python3
 import pygame
+import time
 
 from src import skis
 from src import obstacle
 from src import menu
 from src import highscore
 
+def timer(start, seconds):
+    timer = time.time()
+    string = str(int((start + seconds - timer)//60))
+    if (string == "-1"):
+        string = "0:00"
+        return string
+    string += ":"
+    string_seconds = str(int((start + seconds - timer)%60))
+    if (len(string_seconds) == 2):
+        string += string_seconds
+    else:
+        string += "0" + string_seconds
+    return string
+
 def text_input(scene: menu.Scene):
     text = ""
     done = False
-    white=(255,255,255)
     black=(0,0,0)
     font = pygame.font.SysFont("Arial", 30)
 
@@ -42,11 +56,12 @@ def text_input(scene: menu.Scene):
 def check_collisions(s: skis.Skis, obstacleSpawner: obstacle.obstacleSpawner):
     for item in obstacleSpawner.obstacles:
         if s.intersects((item.x, item.y, item.w, item.h)):
-            print("Ono!")
-
+            s.speed = 50
 
 def run_game(scene : menu.Scene) :
     score = 0
+    font = pygame.font.SysFont("Arial", 30)
+    start = time.time()
     s = skis.Skis(scene.screen)
     obstacleSpawner = obstacle.obstacleSpawner(scene.screen)
     bg = pygame.image.load("assets/neige.png").convert()
@@ -68,9 +83,15 @@ def run_game(scene : menu.Scene) :
         scene.screen.blit(bg, (0, bg.get_height() * (scroll - 1)))
         scene.screen.blit(bg, (0, bg.get_height() * scroll))
         scene.screen.blit(bg, (0, bg.get_height() * (scroll + 1)))
+        txtsurf = font.render(timer(start, 60), True, (0, 0, 0))
+        scene.screen.blit(txtsurf,(370 - txtsurf.get_width() // 2, 0 + txtsurf.get_height() // 2))
         s.update(scene.screen, dt, s.pos.x)
         obstacleSpawner.update(s.get_deplacement(dt).y)
         pygame.display.update()
+        if (time.time() - start > 60):
+            scene.scene = menu.Scene.GAMEOVER
+        if (s.pos.x < -scene.screen.get_width() / 2  or s.pos.x > scene.screen.get_width() / 2):
+            scene.scene = menu.Scene.GAMEOVER
     return score
 
 def main():
@@ -83,11 +104,10 @@ def main():
         if scn.scene == menu.Scene.MAIN_MENU:
             menu.main_menu(scn)
         elif scn.scene == menu.Scene.GAME:
-            score = 1
-            menu.game_over_menu(scn, score)
             name = text_input(scn)
             score = int(run_game(scn))
             highscore.add_score(name, score)
+            menu.game_over_menu(scn, score)
         elif scn.scene == menu.Scene.HIGHSCORE:
             menu.highscore_menu(scn)
 

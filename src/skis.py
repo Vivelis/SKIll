@@ -77,8 +77,8 @@ class Skis:
         self.right_ski = Ski(self.img, False)
         self.y = (3 / 4) * screen.get_height()
         c = screen.get_width() / 2
-        self.left_x = c -(1 / 10) * screen.get_width()
-        self.right_x = c + (1 / 10) * screen.get_width()
+        self.left_x = c -(1 / 15) * screen.get_width()
+        self.right_x = c + (1 / 15) * screen.get_width()
         self.speed = 1
         self.max_speed = 883 / 3
         self.max_speed_gain = self.max_speed / 7.5
