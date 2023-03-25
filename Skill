@@ -34,11 +34,19 @@ def text_input(scene: menu.Scene):
     return text
 
 
+def check_collisions(s: skis.Skis, obstacleSpawner: obstacle.obstacleSpawner):
+    for item in obstacleSpawner.obstacles:
+        if s.intersects((item.x, item.y, item.w, item.h)):
+            print("Ono!")
+
+
 def run_game(scene : menu.Scene) :
     score = 0
-    s = skis.Skis()
+    s = skis.Skis(scene.screen)
     obstacleSpawner = obstacle.obstacleSpawner(scene.screen)
-    bg = pygame.image.load("assets/bg.png").convert()
+    bg = pygame.image.load("assets/neige.png").convert()
+    parallax_speed = 1
+    parallax_height = bg.get_height()
 
     while scene.scene == menu.Scene.GAME:
         dt = scene.clock.tick(60) / 1000
@@ -48,14 +56,15 @@ def run_game(scene : menu.Scene) :
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_a:
                     s.left_ski.shake()
+        check_collisions(s, obstacleSpawner)
+        score += s.calc_score(dt)
+        scroll = ((s.pos.y * parallax_speed) % parallax_height) / parallax_height
         scene.screen.fill((255, 255, 255))
-        scroll = (s.pos.y % 500) / 500
         scene.screen.blit(bg, (0, bg.get_height() * (scroll - 1)))
         scene.screen.blit(bg, (0, bg.get_height() * scroll))
         scene.screen.blit(bg, (0, bg.get_height() * (scroll + 1)))
         s.update(scene.screen, dt, s.pos.x)
-        score += s.calc_score(dt)
-        obstacleSpawner.update()
+        obstacleSpawner.update(s.get_deplacement(dt).y)
         pygame.display.update()
     return score
 
