@@ -30,5 +30,3 @@ def enter_text():
         screen.blit(txtsurf,(200 - txtsurf.get_width() // 2, 150 - txtsurf.get_height() // 2))
         pygame.display.update()
     return text
-
-#timer(120)
