@@ -1,6 +1,7 @@
 import pygame
 from random import uniform
 from math import cos, sin, radians, exp
+from src.obstacle import pomeranian
 
 Surface = pygame.Surface
 Rect = pygame.Rect
@@ -69,19 +70,24 @@ class Ski:
 
 
 class Skis:
-    def __init__(self) -> None:
+    def __init__(self, screen) -> None:
         self.pos = pygame.math.Vector2(0, 0)
         self.img = pygame.image.load("assets/ski.png")
         self.left_ski = Ski(self.img, True)
         self.right_ski = Ski(self.img, False)
-        self.y = (3 / 4)
-        self.x = (1 / 12)
+        self.y = (3 / 4) * screen.get_height()
+        c = screen.get_width() / 2
+        self.left_x = c -(1 / 10) * screen.get_width()
+        self.right_x = c + (1 / 10) * screen.get_width()
         self.speed = 1
         self.max_speed = 883 / 3
         self.max_speed_gain = self.max_speed / 7.5
         self.max_speed_penalty = 3
         self.drag_ratio = 0.9
         self.speed_ratio = 3
+
+        self.left_rect = Rect(0,0,0,0)
+        self.right_rect = Rect(0,0,0,0)
 
         self.max_points = 100
 
@@ -109,6 +115,14 @@ class Skis:
     def angle_diff(self) -> float:
         return abs(self.left_ski.angle - self.right_ski.angle)
 
+    def intersects(self, other: Rect):
+        if (self.left_rect.colliderect(other)):
+            return True
+        if (self.right_rect.colliderect(other)):
+            return True
+        return False
+
+
     def update(self, screen: pygame.surface.Surface, dt: float, x: float = 0) -> None:
         keys = pygame.key.get_pressed()
         if keys[pygame.K_k]:
@@ -120,19 +134,14 @@ class Skis:
         if keys[pygame.K_d]:
             self.left_ski.add_momentum(1 * dt)
 
-        y = screen.get_height() * self.y
-        width = screen.get_width()
-        x_diff = width * self.x
-        c = width / 2
-
         self.left_ski.update(dt)
-        s, r = self.left_ski.get_rect((c - x_diff, y))
-        r.left += x
-        screen.blit(s, r)
+        s, self.right_rect = self.left_ski.get_rect((self.left_x, self.y))
+        self.right_rect.left += x
+        screen.blit(s, self.right_rect)
 
         self.right_ski.update(dt)
-        s, r = self.right_ski.get_rect((c + x_diff, y))
-        r.left += x
-        screen.blit(s, r)
-        self.pos += self.get_deplacement(dt)
+        s, self.left_rect = self.right_ski.get_rect((self.right_x, self.y))
+        self.left_rect.left += x
+        screen.blit(s, self.left_rect)
         self.update_speed(dt)
+        self.pos += self.get_deplacement(dt)
