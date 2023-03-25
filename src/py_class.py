@@ -45,13 +45,13 @@ class Button:
         self.text = text
         self.linked_function = linked_function
         self.rectangle = rectangle
-        
+
     def is_clicked(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.rectangle.x <= event.pos[0] <= self.rectangle.x + self.rectangle.width and self.rectangle.y <= event.pos[1] <= self.rectangle.y + self.rectangle.height:
                 return True
         return False
-    
+
     def linked_function(self):
         self.linked_function()
 

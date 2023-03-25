@@ -1,0 +1,79 @@
+#!/usr/bin/python3
+import pygame
+
+from src import skis
+from src import obstacle
+from src import menu
+from src import highscore
+
+def text_input(scene: menu.Scene):
+    text = ""
+    done = False
+    white=(255,255,255)
+    font = pygame.font.SysFont("Arial", 30)
+
+    bg = (0,0,0)
+    while not done:
+        for event in pygame.event.get():
+            scene.screen.fill(bg)
+            if event.type == pygame.QUIT:
+                done = True
+                scene.scene = menu.Scene.EXIT
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:
+                    done = True
+                elif event.key == pygame.K_BACKSPACE:
+                    if len(text)>0:
+                        text = text[:-1]
+                else:
+                    text += event.unicode
+        scene.screen.fill(bg)
+        txtsurf = font.render(text, True, white)
+        scene.screen.blit(txtsurf,(200 - txtsurf.get_width() // 2, 150 - txtsurf.get_height() // 2))
+        pygame.display.update()
+    return text
+
+
+def run_game(scene : menu.Scene) :
+    score = 0
+    s = skis.Skis()
+    obstacleSpawner = obstacle.obstacleSpawner(scene.screen)
+    bg = pygame.image.load("assets/bg.png").convert()
+
+    while scene.scene == menu.Scene.GAME:
+        dt = scene.clock.tick(60) / 1000
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                scene.scene = menu.Scene.EXIT
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_a:
+                    s.left_ski.shake()
+        scene.screen.fill((255, 255, 255))
+        scroll = (s.pos.y % 500) / 500
+        scene.screen.blit(bg, (0, bg.get_height() * (scroll - 1)))
+        scene.screen.blit(bg, (0, bg.get_height() * scroll))
+        scene.screen.blit(bg, (0, bg.get_height() * (scroll + 1)))
+        s.update(scene.screen, dt, s.pos.x)
+        score += s.calc_score(dt)
+        obstacleSpawner.update()
+        pygame.display.update()
+    return score
+
+def main():
+    pygame.init()
+    screen = pygame.display.set_mode((588, 883))
+    pygame.display.set_caption("SKIll")
+
+    scn = menu.Scene(screen)
+    while scn.scene != menu.Scene.EXIT:
+        if scn.scene == menu.Scene.MAIN_MENU:
+            menu.main_menu(scn)
+        elif scn.scene == menu.Scene.GAME:
+            name = text_input(scn)
+            score = int(run_game(scn))
+            highscore.add_score(name, score)
+        elif scn.scene == menu.Scene.HIGHSCORE:
+            menu.highscore_menu(scn)
+
+if __name__ == "__main__":
+    main()
