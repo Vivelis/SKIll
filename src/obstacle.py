@@ -13,6 +13,9 @@ class obstacle :
     def draw(self, screen) :
         pygame.draw.rect(screen, self.color, (self.x, self.y, self.w, self.h))
 
+    def update(self) :
+        self.y += 1
+
 class pomeranian(obstacle) :
     def __init__(self, x, y, w, h, color) :
         super().__init__(x, y, w, h, color)
@@ -29,11 +32,11 @@ class obstacleSpawner :
         self.last_spawn = default_timer()
         self.spawn_time = 1
         random.seed(10)
+        self.clock = pygame.time.Clock()
 
     def spawn(self) :
         x = random.randint(0, self.screen.get_width())
-        y = random.randint(0, self.screen.get_height())
-        self.obstacles.append(pomeranian(x, y, 100, 100, (255, 0, 0)))
+        self.obstacles.append(pomeranian(x, -100, 100, 100, (255, 0, 0)))
 
     def draw(self) :
         for obstacle in self.obstacles :
@@ -44,3 +47,8 @@ class obstacleSpawner :
         if default_timer() - self.last_spawn > self.spawn_time :
             self.spawn()
             self.last_spawn = default_timer()
+        for obstacle in self.obstacles :
+            obstacle.update()
+        for obstacle in self.obstacles :
+            if obstacle.y > self.screen.get_height() :
+                self.obstacles.remove(obstacle)
